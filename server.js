@@ -16,18 +16,38 @@ const PORT = process.env.PORT || 3001;
 app.get("/test", (request, response) => {
   response.send("test request received");
 });
-app.get("/books", async (require, response) => {
-  const books = await Book.find();
-  response.json(books);
+app.get("/books", async (request, response) => {
+  try {
+    const books = await Book.find(request.query);
+    response.json(books);
+  } catch (error) {
+    response.status(500).json("Cannot find any books");
+  }
 });
 app.post("/books", async (request, response) => {
-  console.log("book adding");
-  const newBook = await Book.create(request.body);
-  response.json(newBook);
+  try {
+    const newBook = await Book.create(request.body);
+    response.json(newBook);
+  } catch (error) {
+    response.status(500).json("Cannot create the book");
+  }
 });
 app.delete("/books/:id", async (request, response) => {
-  const deletedBook = await Book.findByIdAndDelete(request.params.id);
-  response.json(deletedBook);
+  try {
+    if (request.params.id) {
+      const deletedBook = await Book.findByIdAndDelete(request.params.id);
+      response.json(deletedBook);
+    } else {
+      response.status(500).json("Please enter an ID");
+    }
+  } catch (error) {
+    response.status(500).json("Cannot delete the book");
+  }
+});
+
+app.put("/books/:id", async (request, response) => {
+  const updatedBook = await Book.findByIdAndUpdate(request.params.id, request.body);
+  response.json(updatedBook);
 });
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
